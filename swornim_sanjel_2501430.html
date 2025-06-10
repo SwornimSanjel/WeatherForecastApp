@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather Forecast App - Swornim Sanjel</title>
+    <link rel="stylesheet" href="swornim_sanjel_2501430.css">
+</head>
+<body>
+    <div class="container">
+        <div class="my-city">
+            <h1>Weather Forecast</h1>
+            <p id="live-date"></p>
+        </div>
+        <div class="input-details">
+            <input type="text" id="city-search" placeholder="Enter City Name">
+            <input type="button" id="search-button" value="Search">
+        </div>
+        <div class="weather-det">
+            <div class="weather-icon">
+                <img id="weather-icon" alt="Weather Icon">
+                <div class="temp-info" id="information"></div>
+            </div>
+        </div>
+        <div class="tempr">
+            <div class="temp" id="temperature"></div>
+        </div>
+        <div class="all-details">
+            <div class="icon">
+                <p class="wind-speed">Wind Speed: <span id="wind-speed"></span></p>
+                <img src="https://i.postimg.cc/Tw89mdtn/wind-speed.png" id="wind-icon" alt="Wind Speed Icon">
+            </div>
+            <div class="icon">
+                <p class="pressure">Pressure: <span id="pressure"></span></p>
+                <img src="https://i.postimg.cc/XJyf7R3X/pressure.png" id="pressure-icon" alt="Pressure Icon">
+            </div>
+            <div class="icon">
+                <p class="humidity">Humidity: <span id="humidity"></span></p>
+                <img src="https://i.postimg.cc/pL6kWY8G/humidity.png" id="humidity-icon" alt="Humidity Icon">
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const myApiKey = "19f45209075346e5f495847f3e798ecc";  
+        const defCity = "Tuscumbia"; 
+
+        async function fetchWeatherData(cityName) {   
+            const api_url = `http://localhost/weather-2/prototyp2.php?q=${cityName}`;
+            try{
+                let weather_data;
+                
+                if(navigator.onLine){
+                    const response = await fetch(api_url);
+                    if(!response.ok){
+                        throw new Error("City not found");
+                    }
+                    weather_data = await response.json();
+                    localStorage.setItem(cityName, JSON.stringify(weather_data));
+                }
+                else{
+                    weather_data = JSON.parse(localStorage.getItem(cityName));
+                }
+
+                document.getElementById("weather-icon").src = `https://openweathermap.org/img/wn/${weather_data[0].icon}@2x.png`;
+                document.getElementById("weather-icon").style.display = "block";
+                document.querySelector(".my-city h1").textContent = `Weather Forecast - ${weather_data[0].city}`; 
+                document.getElementById("temperature").textContent = `${weather_data[0].temperature}°C`;
+                document.getElementById("information").textContent = weather_data[0].descriptions||'No description'; 
+                document.getElementById("pressure").textContent = `${weather_data[0].pressure} hPa`;
+                document.getElementById("humidity").textContent = `${weather_data[0].humidity}%`;
+                document.getElementById("wind-speed").textContent = `${weather_data[0].wind} m/s`;
+
+                const date = new Date(); 
+                const options = {year: 'numeric', month: 'long', day: 'numeric'}; 
+                document.getElementById("live-date").textContent = `${date.toLocaleDateString(undefined, options)}`;
+
+            } catch(err){
+                alert("The data could not be fetched due to an error");
+                console.error(err);
+            }
+        }
+
+        document.getElementById("search-button").addEventListener("click", () => {
+            const cityInput = document.getElementById("city-search");
+            if(cityInput.value.trim()) {
+                fetchWeatherData(cityInput.value.trim());
+                cityInput.value = "";
+            }
+            else{
+                alert("Please enter a city name.");
+            }
+        });
+
+        fetchWeatherData(defCity);
+
+        function capitalize(text){
+            return text[0].toUpperCase() + text.slice(1);
+        }
+    </script>
+</body>
+</html>
